@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Image Load Debugger</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            margin-top: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 10px;
+        }
+        
+        .header h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .debug-section {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .debug-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .test-container {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 5px solid #ddd;
+        }
+        
+        .test-container.success {
+            border-left-color: #4caf50;
+        }
+        
+        .test-container.error {
+            border-left-color: #f44336;
+        }
+        
+        .test-container.warning {
+            border-left-color: #ff9800;
+        }
+        
+        .test-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .test-result {
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .status.warning {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        .status.pending {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            background: #2196f3;
+            color: white;
+            margin: 10px 5px;
+        }
+        
+        button:hover {
+            background: #1976d2;
+            transform: translateY(-3px);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .solution {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .solution h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+        }
+        
+        .solution ol {
+            padding-left: 25px;
+            margin-bottom: 15px;
+        }
+        
+        .solution li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .solution code {
+            background: #d1ecdb;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        
+        .log-output {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            button {
+                width: 100%;
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>GitHub Image Load Debugger</h1>
+        <p>Diagnosing why images aren't loading from your GitHub repository</p>
+    </div>
+    
+    <div class="container">
+        <div class="debug-section">
+            <h3>Repository Information</h3>
+            <div class="test-container">
+                <div class="test-title">
+                    <span>Detected Repository Details</span>
+                    <span class="status pending">Testing</span>
+                </div>
+                <div class="test-result" id="repoInfoResult">Checking...</div>
+            </div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Connection Tests</h3>
+            <div class="test-container">
+                <div class="test-title">
+                    <span>GitHub API Access</span>
+                    <span class="status pending">Testing</span>
+                </div>
+                <div class="test-result" id="apiTestResult">Testing API connectivity...</div>
+            </div>
+            
+            <div class="test-container">
+                <div class="test-title">
+                    <span>Images Folder Existence</span>
+                    <span class="status pending">Testing</span>
+                </div>
+                <div class="test-result" id="folderTestResult">Checking if images folder exists...</div>
+            </div>
+            
+            <div class="test-container">
+                <div class="test-title">
+                    <span>Category Folder Detection</span>
+                    <span class="status pending">Testing</span>
+                </div>
+                <div class="test-result" id="categoryTestResult">Looking for category folders...</div>
+            </div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Image Access Tests</h3>
+            <div class="test-container">
+                <div class="test-title">
+                    <span>Direct Image URL Test</span>
+                    <span class="status pending">Testing</span>
+                </div>
+                <div class="test-result" id="directUrlTestResult">Testing direct image access...</div>
+            </div>
+            
+            <div class="test-container">
+                <div class="test-title">
+                    <span>Sample Image Load</span>
+                    <span class="status pending">Testing</span>
+                </div>
+                <div class="test-result" id="sampleImageTestResult">Attempting to load a sample image...</div>
+                <img id="sampleImagePreview" class="image-preview" style="display: none;">
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <button id="runTestsBtn">Run All Tests</button>
+            <button id="testSampleImagesBtn">Test Sample Images</button>
+            <button id="viewRepoBtn">View Repository on GitHub</button>
+        </div>
+        
+        <div class="log-output" id="debugLog">
+            [DEBUG] Initializing debugger...
+        </div>
+        
+        <div class="solution">
+            <h3>Possible Solutions</h3>
+            <ol id="solutionsList">
+                <li>Test results will appear here after running diagnostics</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const repoInfoResult = document.getElementById('repoInfoResult');
+            const apiTestResult = document.getElementById('apiTestResult');
+            const folderTestResult = document.getElementById('folderTestResult');
+            const categoryTestResult = document.getElementById('categoryTestResult');
+            const directUrlTestResult = document.getElementById('directUrlTestResult');
+            const sampleImageTestResult = document.getElementById('sampleImageTestResult');
+            const sampleImagePreview = document.getElementById('sampleImagePreview');
+            const debugLog = document.getElementById('debugLog');
+            const solutionsList = document.getElementById('solutionsList');
+            const runTestsBtn = document.getElementById('runTestsBtn');
+            const testSampleImagesBtn = document.getElementById('testSampleImagesBtn');
+            const viewRepoBtn = document.getElementById('viewRepoBtn');
+            
+            // Extract repo info from URL
+            const repoPath = window.location.pathname;
+            const pathParts = repoPath.split('/');
+            const username = pathParts[1];
+            const repoName = pathParts[2];
+            const isGitHubPages = username && repoName;
+            
+            // Update repo info
+            function updateRepoInfo() {
+                repoInfoResult.innerHTML = `
+Username: ${username || 'Not detected'}
+Repository: ${repoName || 'Not detected'}
+GitHub Pages: ${isGitHubPages ? 'Yes' : 'No'}
+Current URL: ${window.location.href}
+                `;
+                
+                const repoInfoStatus = document.querySelector('#repoInfoResult').closest('.test-container')
+                    .querySelector('.status');
+                repoInfoStatus.textContent = 'Completed';
+                repoInfoStatus.className = 'status success';
+                
+                log('Repository information gathered');
+            }
+            
+            // Log messages to debug console
+            function log(message) {
+                debugLog.innerHTML += `\n[DEBUG] ${message}`;
+                debugLog.scrollTop = debugLog.scrollHeight;
+            }
+            
+            // Update test result
+            function updateTestResult(element, message, status) {
+                element.innerHTML = message;
+                const statusElement = element.closest('.test-container').querySelector('.status');
+                statusElement.textContent = status.type;
+                statusElement.className = `status ${status.type}`;
+                
+                if (status.message) {
+                    log(status.message);
+                }
+            }
+            
+            // Test GitHub API access
+            async function testGitHubAPI() {
+                if (!isGitHubPages) {
+                    updateTestResult(apiTestResult, 'Cannot test API without detected repository information.', 
+                                   {type: 'error', message: 'API test skipped - no repo info'});
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`https://api.github.com/repos/${username}/${repoName}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        updateTestResult(apiTestResult, 
+                            `API access successful!\nRepository: ${data.full_name}\nDescription: ${data.description || 'None'}\nDefault branch: ${data.default_branch}`,
+                            {type: 'success', message: 'GitHub API access successful'});
+                    } else {
+                        updateTestResult(apiTestResult, 
+                            `API returned status: ${response.status} ${response.statusText}\nYou may have reached API rate limits.`,
+                            {type: 'warning', message: `GitHub API returned ${response.status}`});
+                    }
+                } catch (error) {
+                    updateTestResult(apiTestResult, 
+                        `API test failed: ${error.message}\nThis is likely due to CORS restrictions or network issues.`,
+                        {type: 'error', message: `GitHub API test failed: ${error.message}`});
+                }
+            }
+            
+            // Test images folder existence
+            async function testImagesFolder() {
+                if (!isGitHubPages) {
+                    updateTestResult(folderTestResult, 'Cannot test folder without detected repository information.', 
+                                   {type: 'error', message: 'Folder test skipped - no repo info'});
+                    return;
+                }
+                
+                try {
+                    // Try multiple approaches to test the images folder
+                    const responses = await Promise.allSettled([
+                        fetch(`https://api.github.com/repos/${username}/${repoName}/contents/images`),
+                        fetch(`https://raw.githubusercontent.com/${username}/${repoName}/main/images/`),
+                        fetch(`https://raw.githubusercontent.com/${username}/${repoName}/master/images/`)
+                    ]);
+                    
+                    let found = false;
+                    let message = '';
+                    
+                    for (let i = 0; i < responses.length; i++) {
+                        const response = responses[i];
+                        if (response.status === 'fulfilled' && response.value.status === 200) {
+                            found = true;
+                            message = `Images folder found using method ${i+1}!`;
+                            break;
+                        }
+                    }
+                    
+                    if (found) {
+                        updateTestResult(folderTestResult, message, 
+                                       {type: 'success', message: 'Images folder found'});
+                    } else {
+                        updateTestResult(folderTestResult, 
+                            `Could not find an images folder in your repository.\nChecked paths:\n- /images/\n- /main/images/\n- /master/images/`,
+                            {type: 'error', message: 'Images folder not found'});
+                    }
+                } catch (error) {
+                    updateTestResult(folderTestResult, 
+                        `Error testing images folder: ${error.message}`,
+                        {type: 'error', message: `Error testing images folder: ${error.message}`});
+                }
+            }
+            
+            // Test category folder detection
+            async function testCategoryFolders() {
+                if (!isGitHubPages) {
+                    updateTestResult(categoryTestResult, 'Cannot test categories without detected repository information.', 
+                                   {type: 'error', message: 'Category test skipped - no repo info'});
+                    return;
+                }
+                
+                try {
+                    // Try to access the images folder via API
+                    const response = await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/images`);
+                    if (response.status !== 200) {
+                        updateTestResult(categoryTestResult, 
+                            `Cannot access images folder (HTTP ${response.status}). Cannot detect categories.`,
+                            {type: 'error', message: 'Cannot access images folder to detect categories'});
+                        return;
+                    }
+                    
+                    const data = await response.json();
+                    const categories = data.filter(item => item.type === 'dir').map(item => item.name);
+                    
+                    if (categories.length > 0) {
+                        updateTestResult(categoryTestResult, 
+                            `Found ${categories.length} category folder(s):\n${categories.join('\n')}`,
+                            {type: 'success', message: `Found ${categories.length} categories`});
+                    } else {
+                        updateTestResult(categoryTestResult, 
+                            'No category folders found in the images directory.\nMake sure you have subfolders inside your images folder.',
+                            {type: 'error', message: 'No category folders found'});
+                    }
+                } catch (error) {
+                    updateTestResult(categoryTestResult, 
+                        `Error detecting categories: ${error.message}`,
+                        {type: 'error', message: `Error detecting categories: ${error.message}`});
+                }
+            }
+            
+            // Test direct image URL access
+            async function testDirectImageUrl() {
+                if (!isGitHubPages) {
+                    updateTestResult(directUrlTestResult, 'Cannot test image URLs without detected repository information.', 
+                                   {type: 'error', message: 'Direct URL test skipped - no repo info'});
+                    return;
+                }
+                
+                // Test multiple possible URL patterns
+                const testUrls = [
+                    `https://raw.githubusercontent.com/${username}/${repoName}/main/images/ATT/sample.jpg`,
+                    `https://raw.githubusercontent.com/${username}/${repoName}/master/images/ATT/sample.jpg`,
+                    `https://raw.githubusercontent.com/${username}/${repoName}/main/images/ATT/sample.png`,
+                    `https://${username}.github.io/${repoName}/images/ATT/sample.jpg`
+                ];
+                
+                let results = [];
+                
+                for (const url of testUrls) {
+                    try {
+                        const response = await fetch(url, {method: 'HEAD'});
+                        results.push(`${response.status === 200 ? '✅' : '❌'} ${url} (${response.status})`);
+                    } catch (error) {
+                        results.push(`❌ ${url} (Error: ${error.message})`);
+                    }
+                }
+                
+                updateTestResult(directUrlTestResult, 
+                    `Testing direct image URL patterns:\n${results.join('\n')}`,
+                    {type: 'warning', message: 'Direct URL test completed'});
+            }
+            
+            // Test loading a sample image
+            async function testSampleImage() {
+                if (!isGitHubPages) {
+                    updateTestResult(sampleImageTestResult, 'Cannot test sample image without detected repository information.', 
+                                   {type: 'error', message: 'Sample image test skipped - no repo info'});
+                    return;
+                }
+                
+                // Try multiple possible image paths
+                const testUrls = [
+                    `https://raw.githubusercontent.com/${username}/${repoName}/main/images/ATT/sample.jpg`,
+                    `https://raw.githubusercontent.com/${username}/${repoName}/master/images/ATT/sample.png`,
+                    `https://raw.githubusercontent.com/${username}/${repoName}/main/images/ATT/image1.jpg`,
+                    `https://raw.githubusercontent.com/${username}/${repoName}/main/images/ATT/1.jpg`
+                ];
+                
+                let loaded = false;
+                
+                for (const url of testUrls) {
+                    try {
+                        // Test with an image load
+                        const img = new Image();
+                        await new Promise((resolve, reject) => {
+                            img.onload = resolve;
+                            img.onerror = reject;
+                            img.src = url;
+                        });
+                        
+                        // If we get here, the image loaded successfully
+                        sampleImagePreview.src = url;
+                        sampleImagePreview.style.display = 'block';
+                        updateTestResult(sampleImageTestResult, 
+                            `Successfully loaded image from:\n${url}\n\nImage preview:`,
+                            {type: 'success', message: `Sample image loaded from ${url}`});
+                        loaded = true;
+                        break;
+                    } catch (error) {
+                        // Continue to next URL
+                    }
+                }
+                
+                if (!loaded) {
+                    updateTestResult(sampleImageTestResult, 
+                        `Could not load any sample images from common paths.\nTried:\n${testUrls.join('\n')}`,
+                        {type: 'error', message: 'Could not load any sample images'});
+                }
+            }
+            
+            // Run all tests
+            async function runAllTests() {
+                log('Starting all tests...');
+                updateRepoInfo();
+                await testGitHubAPI();
+                await testImagesFolder();
+                await testCategoryFolders();
+                await testDirectImageUrl();
+                await testSampleImage();
+                generateSolutions();
+                log('All tests completed');
+            }
+            
+            // Generate solutions based on test results
+            function generateSolutions() {
+                const solutions = [
+                    "Make sure your repository has an 'images' folder at the root level",
+                    "Inside the 'images' folder, create subfolders for each category (like 'ATT')",
+                    "Add image files to your category folders with common extensions (.jpg, .png, etc.)",
+                    "Ensure your image filenames don't contain spaces or special characters",
+                    "Check that your repository is public (private repos can't be accessed without authentication)",
+                    "Try using the direct URL format: https://raw.githubusercontent.com/username/repo/main/images/category/image.jpg"
+                ];
+                
+                solutionsList.innerHTML = '';
+                solutions.forEach(solution => {
+                    const li = document.createElement('li');
+                    li.textContent = solution;
+                    solutionsList.appendChild(li);
+                });
+            }
+            
+            // Set up event listeners
+            runTestsBtn.addEventListener('click', runAllTests);
+            testSampleImagesBtn.addEventListener('click', testSampleImage);
+            viewRepoBtn.addEventListener('click', function() {
+                if (isGitHubPages) {
+                    window.open(`https://github.com/${username}/${repoName}`, '_blank');
+                } else {
+                    alert('Could not detect repository information from URL');
+                }
+            });
+            
+            // Initialize
+            updateRepoInfo();
+            log('Debugger initialized. Click "Run All Tests" to begin diagnostics.');
+        });
+    </script>
+</body>
+</html>

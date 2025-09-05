@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Images Debugger - Advanced</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            margin-top: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 10px;
+        }
+        
+        .header h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .debug-section {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .debug-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .test-container {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 5px solid #ddd;
+        }
+        
+        .test-container.success {
+            border-left-color: #4caf50;
+        }
+        
+        .test-container.error {
+            border-left-color: #f44336;
+        }
+        
+        .test-container.warning {
+            border-left-color: #ff9800;
+        }
+        
+        .test-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .test-result {
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .status.warning {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        .status.pending {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            background: #2196f3;
+            color: white;
+            margin: 10px 5px;
+        }
+        
+        button:hover {
+            background: #1976d2;
+            transform: translateY(-3px);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .solution {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .solution h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+        }
+        
+        .solution ol {
+            padding-left: 25px;
+            margin-bottom: 15px;
+        }
+        
+        .solution li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .solution code {
+            background: #d1ecdb;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        
+        .log-output {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .manual-test {
+            background: #fff3e0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .manual-test h4 {
+            margin-bottom: 10px;
+            color: #ef6c00;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+        
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            button {
+                width: 100%;
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>GitHub Images Advanced Debugger</h1>
+        <p>All tests failed - let's dig deeper into the issue</p>
+    </div>
+    
+    <div class="container">
+        <div class="debug-section">
+            <h3>Repository Information</h3>
+            <div class="test-container">
+                <div class="test-title">
+                    <span>Detected Repository Details</span>
+                    <span class="status pending">Testing</span>
+                </div>
+                <div class="test-result" id="repoInfoResult">Checking...</div>
+            </div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Direct URL Tests</h3>
+            <div class="test-container">
+                <div class="test-title">
+                    <span>GitHub Raw Content Access</span>
+                    <span class="status pending">Testing</span>
+                </div>
+                <div class="test-result" id="rawAccessTestResult">Testing raw.githubusercontent.com access...</div>
+            </div>
+            
+            <div class="test-container">
+                <div class="test-title">
+                    <span>Manual URL Construction</span>
+                    <span class="status pending">Testing</span>
+                </div>
+                <div class="test-result" id="manualUrlTestResult">Testing manually constructed URLs...</div>
+            </div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Manual Image Testing</h3>
+            <p>Enter the exact filename of one of your images in the ATT folder:</p>
+            
+            <div class="manual-test">
+                <h4>Test Specific Image</h4>
+                <input type="text" id="imageFilename" placeholder="e.g., image1.jpg or photo.png">
+                <button id="testSpecificImageBtn">Test This Image</button>
+                <div class="test-result" id="specificImageTestResult">Enter a filename and click test</div>
+                <img id="specificImagePreview" class="image-preview" style="display: none;">
+            </div>
+            
+            <div class="manual-test">
+                <h4>Test Custom URL</h4>
+                <input type="text" id="customImageUrl" placeholder="https://raw.githubusercontent.com/...">
+                <button id="testCustomUrlBtn">Test This URL</button>
+                <div class="test-result" id="customUrlTestResult">Enter a URL and click test</div>
+                <img id="customImagePreview" class="image-preview" style="display: none;">
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <button id="runAdvancedTestsBtn">Run Advanced Tests</button>
+            <button id="viewRepoBtn">View Repository on GitHub</button>
+            <button id="viewImagesBtn">View Images Folder on GitHub</button>
+        </div>
+        
+        <div class="log-output" id="debugLog">
+            [DEBUG] Initializing advanced debugger...
+        </div>
+        
+        <div class="solution">
+            <h3>Next Steps - All Tests Failed</h3>
+            <ol id="solutionsList">
+                <li>Since all tests failed, we need to manually verify your repository structure</li>
+                <li>Use the manual testing tools above to test specific image files</li>
+                <li>Check the console for detailed error messages (F12 → Console)</li>
+            </ol>
+            
+            <h3>Most Likely Issues</h3>
+            <ol>
+                <li><strong>Repository is private</strong> - GitHub Pages requires public repositories for raw content access</li>
+                <li><strong>Incorrect branch name</strong> - Your images might be in a branch other than "main" or "master"</li>
+                <li><strong>CORS restrictions</strong> - GitHub's raw content domain may be blocking cross-origin requests</li>
+                <li><strong>Filename case sensitivity</strong> - GitHub paths are case-sensitive (ATT vs att)</li>
+                <li><strong>Image file format issues</strong> - The images might be corrupted or in an unsupported format</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const repoInfoResult = document.getElementById('repoInfoResult');
+            const rawAccessTestResult = document.getElementById('rawAccessTestResult');
+            const manualUrlTestResult = document.getElementById('manualUrlTestResult');
+            const specificImageTestResult = document.getElementById('specificImageTestResult');
+            const customUrlTestResult = document.getElementById('customUrlTestResult');
+            const specificImagePreview = document.getElementById('specificImagePreview');
+            const customImagePreview = document.getElementById('customImagePreview');
+            const debugLog = document.getElementById('debugLog');
+            const solutionsList = document.getElementById('solutionsList');
+            const runAdvancedTestsBtn = document.getElementById('runAdvancedTestsBtn');
+            const viewRepoBtn = document.getElementById('viewRepoBtn');
+            const viewImagesBtn = document.getElementById('viewImagesBtn');
+            const testSpecificImageBtn = document.getElementById('testSpecificImageBtn');
+            const testCustomUrlBtn = document.getElementById('testCustomUrlBtn');
+            const imageFilenameInput = document.getElementById('imageFilename');
+            const customImageUrlInput = document.getElementById('customImageUrl');
+            
+            // Extract repo info from URL
+            const repoPath = window.location.pathname;
+            const pathParts = repoPath.split('/');
+            const username = pathParts[1];
+            const repoName = pathParts[2];
+            const isGitHubPages = username && repoName;
+            
+            // Update repo info
+            function updateRepoInfo() {
+                repoInfoResult.innerHTML = `
+Username: ${username || 'Not detected'}
+Repository: ${repoName || 'Not detected'}
+GitHub Pages: ${isGitHubPages ? 'Yes' : 'No'}
+Current URL: ${window.location.href}
+                `;
+                
+                const repoInfoStatus = document.querySelector('#repoInfoResult').closest('.test-container')
+                    .querySelector('.status');
+                repoInfoStatus.textContent = 'Completed';
+                repoInfoStatus.className = 'status success';
+                
+                log('Repository information gathered');
+            }
+            
+            // Log messages to debug console
+            function log(message) {
+                debugLog.innerHTML += `\n[DEBUG] ${message}`;
+                debugLog.scrollTop = debugLog.scrollHeight;
+                console.log(message);
+            }
+            
+            // Update test result
+            function updateTestResult(element, message, status) {
+                element.innerHTML = message;
+                const statusElement = element.closest('.test-container').querySelector('.status');
+                statusElement.textContent = status.type;
+                statusElement.className = `status ${status.type}`;
+                
+                if (status.message) {
+                    log(status.message);
+                }
+            }
+            
+            // Test raw.githubusercontent.com access
+            async function testRawAccess() {
+                if (!isGitHubPages) {
+                    updateTestResult(rawAccessTestResult, 'Cannot test raw access without detected repository information.', 
+                                   {type: 'error', message: 'Raw access test skipped - no repo info'});
+                    return;
+                }
+                
+                try {
+                    // Test access to raw.githubusercontent.com
+                    const testUrl = `https://raw.githubusercontent.com/${username}/${repoName}/main/README.md`;
+                    const response = await fetch(testUrl);
+                    
+                    if (response.status === 200) {
+                        updateTestResult(rawAccessTestResult, 
+                            `✅ Successfully accessed raw.githubusercontent.com\nTest URL: ${testUrl}`,
+                            {type: 'success', message: 'Raw GitHub access successful'});
+                    } else if (response.status === 404) {
+                        updateTestResult(rawAccessTestResult, 
+                            `⚠️ raw.githubusercontent.com is accessible but README not found\nTrying alternative branches...`,
+                            {type: 'warning', message: 'README not found, trying other branches'});
+                        
+                        // Try other branches
+                        await testAlternativeBranches();
+                    } else {
+                        updateTestResult(rawAccessTestResult, 
+                            `❌ Failed to access raw.githubusercontent.com (HTTP ${response.status})\nThis suggests a network or CORS issue.`,
+                            {type: 'error', message: `Raw GitHub access failed with status ${response.status}`});
+                    }
+                } catch (error) {
+                    updateTestResult(rawAccessTestResult, 
+                        `❌ Error accessing raw.githubusercontent.com: ${error.message}\nThis is likely a CORS or network issue.`,
+                        {type: 'error', message: `Raw GitHub access error: ${error.message}`});
+                }
+            }
+            
+            // Test alternative branches
+            async function testAlternativeBranches() {
+                const branches = ['main', 'master', 'gh-pages'];
+                let foundBranch = null;
+                
+                for (const branch of branches) {
+                    try {
+                        const testUrl = `https://raw.githubusercontent.com/${username}/${repoName}/${branch}/README.md`;
+                        const response = await fetch(testUrl);
+                        if (response.status === 200) {
+                            foundBranch = branch;
+                            break;
+                        }
+                    } catch (error) {
+                        // Continue to next branch
+                    }
+                }
+                
+                if (foundBranch) {
+                    updateTestResult(rawAccessTestResult, 
+                        `✅ Found branch: ${foundBranch}\nUse this branch in your image URLs: https://raw.githubusercontent.com/${username}/${repoName}/${foundBranch}/images/...`,
+                        {type: 'success', message: `Found branch: ${foundBranch}`});
+                } else {
+                    updateTestResult(rawAccessTestResult, 
+                        `❌ Could not find any standard branches (main, master, gh-pages)\nCheck your repository branch structure.`,
+                        {type: 'error', message: 'No standard branches found'});
+                }
+            }
+            
+            // Test manually constructed URLs
+            async function testManualUrls() {
+                if (!isGitHubPages) {
+                    updateTestResult(manualUrlTestResult, 'Cannot test URLs without detected repository information.', 
+                                   {type: 'error', message: 'Manual URL test skipped - no repo info'});
+                    return;
+                }
+                
+                const testUrls = [
+                    `https://raw.githubusercontent.com/${username}/${repoName}/main/images/ATT/`,
+                    `https://raw.githubusercontent.com/${username}/${repoName}/master/images/ATT/`,
+                    `https://${username}.github.io/${repoName}/images/ATT/`
+                ];
+                
+                let results = [];
+                
+                for (const url of testUrls) {
+                    try {
+                        const response = await fetch(url, {method: 'HEAD'});
+                        results.push(`${response.status === 200 ? '✅' : '❌'} ${url} (${response.status})`);
+                    } catch (error) {
+                        results.push(`❌ ${url} (Error: ${error.message})`);
+                    }
+                }
+                
+                updateTestResult(manualUrlTestResult, 
+                    `Testing manually constructed URLs:\n${results.join('\n')}\n\nTry these patterns in your game code.`,
+                    {type: 'warning', message: 'Manual URL test completed'});
+            }
+            
+            // Test a specific image filename
+            async function testSpecificImage() {
+                const filename = imageFilenameInput.value.trim();
+                if (!filename) {
+                    specificImageTestResult.innerHTML = 'Please enter a filename first';
+                    return;
+                }
+                
+                if (!isGitHubPages) {
+                    specificImageTestResult.innerHTML = 'Cannot test image without detected repository information.';
+                    return;
+                }
+                
+                specificImageTestResult.innerHTML = 'Testing...';
+                specificImagePreview.style.display = 'none';
+                
+                const branches = ['main', 'master', 'gh-pages'];
+                let found = false;
+                
+                for (const branch of branches) {
+                    const testUrl = `https://raw.githubusercontent.com/${username}/${repoName}/${branch}/images/ATT/${filename}`;
+                    
+                    try {
+                        // Test with an image load
+                        const img = new Image();
+                        await new Promise((resolve, reject) => {
+                            img.onload = resolve;
+                            img.onerror = reject;
+                            img.src = testUrl;
+                        });
+                        
+                        // If we get here, the image loaded successfully
+                        specificImagePreview.src = testUrl;
+                        specificImagePreview.style.display = 'block';
+                        specificImageTestResult.innerHTML = `✅ Successfully loaded image from:\n${testUrl}\n\nImage preview:`;
+                        found = true;
+                        log(`Successfully loaded image from ${testUrl}`);
+                        break;
+                    } catch (error) {
+                        // Continue to next branch
+                        log(`Failed to load from ${testUrl}: ${error.message}`);
+                    }
+                }
+                
+                if (!found) {
+                    specificImageTestResult.innerHTML = `❌ Could not load "${filename}" from any branch.\nTried branches: ${branches.join(', ')}`;
+                    log(`Could not load image ${filename} from any branch`);
+                }
+            }
+            
+            // Test a custom URL
+            async function testCustomUrl() {
+                const url = customImageUrlInput.value.trim();
+                if (!url) {
+                    customUrlTestResult.innerHTML = 'Please enter a URL first';
+                    return;
+                }
+                
+                customUrlTestResult.innerHTML = 'Testing...';
+                customImagePreview.style.display = 'none';
+                
+                try {
+                    // Test with an image load
+                    const img = new Image();
+                    await new Promise((resolve, reject) => {
+                        img.onload = resolve;
+                        img.onerror = reject;
+                        img.src = url;
+                    });
+                    
+                    // If we get here, the image loaded successfully
+                    customImagePreview.src = url;
+                    customImagePreview.style.display = 'block';
+                    customUrlTestResult.innerHTML = `✅ Successfully loaded image from:\n${url}\n\nImage preview:`;
+                    log(`Successfully loaded image from custom URL: ${url}`);
+                } catch (error) {
+                    customUrlTestResult.innerHTML = `❌ Failed to load image from:\n${url}\n\nError: ${error.message}`;
+                    log(`Failed to load image from custom URL ${url}: ${error.message}`);
+                }
+            }
+            
+            // Run all advanced tests
+            async function runAdvancedTests() {
+                log('Starting advanced tests...');
+                updateRepoInfo();
+                await testRawAccess();
+                await testManualUrls();
+                log('Advanced tests completed');
+            }
+            
+            // Set up event listeners
+            runAdvancedTestsBtn.addEventListener('click', runAdvancedTests);
+            testSpecificImageBtn.addEventListener('click', testSpecificImage);
+            testCustomUrlBtn.addEventListener('click', testCustomUrl);
+            viewRepoBtn.addEventListener('click', function() {
+                if (isGitHubPages) {
+                    window.open(`https://github.com/${username}/${repoName}`, '_blank');
+                } else {
+                    alert('Could not detect repository information from URL');
+                }
+            });
+            viewImagesBtn.addEventListener('click', function() {
+                if (isGitHubPages) {
+                    window.open(`https://github.com/${username}/${repoName}/tree/main/images`, '_blank');
+                } else {
+                    alert('Could not detect repository information from URL');
+                }
+            });
+            
+            // Initialize
+            updateRepoInfo();
+            log('Advanced debugger initialized. Click "Run Advanced Tests" to begin diagnostics.');
+            log('Pro tip: Open browser console (F12) for detailed error messages.');
+        });
+    </script>
+</body>
+</html>

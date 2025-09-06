@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Category Picture Guessing Game</title>
+    <title>Multi-Category Image Guessing Game</title>
     <style>
         * {
             box-sizing: border-box;
@@ -253,17 +253,6 @@
             transform: translateY(-3px);
         }
         
-        #retryLoadBtn {
-            background: #9c27b0;
-            color: white;
-            margin-top: 10px;
-        }
-        
-        #retryLoadBtn:hover {
-            background: #7b1fa2;
-            transform: translateY(-3px);
-        }
-        
         .instructions {
             background: #e3f2fd;
             padding: 20px;
@@ -396,30 +385,14 @@
             color: #f0f0f0;
         }
         
-        .status {
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            text-align: center;
-            display: none;
-        }
-        
-        .status.loading {
-            background: #e3f2fd;
-            color: #1976d2;
-            display: block;
-        }
-        
-        .status.success {
-            background: #e8f5e9;
-            color: #2e7d32;
-            display: block;
-        }
-        
-        .status.error {
-            background: #ffebee;
-            color: #c62828;
-            display: block;
+        .github-url {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: monospace;
+            word-break: break-all;
+            border: 1px dashed #ccc;
         }
         
         @media (max-width: 600px) {
@@ -472,19 +445,32 @@
 </head>
 <body>
     <div class="header">
-        <h1>Category Picture Guessing Game</h1>
-        <p>Automatically loads images from your GitHub repository</p>
+        <h1>Multi-Category Image Guessing Game</h1>
+        <p>Choose from different image categories for each round of the game</p>
     </div>
     
     <div class="container">
         <div class="category-selection">
             <h3>Select Image Category</h3>
-            <div class="categories" id="categoriesContainer">
-                <div class="category-placeholder">Loading categories from GitHub...</div>
+            <div class="categories">
+                <div class="category" data-category="animals">
+                    <h4>Animals</h4>
+                    <p>Guess the animal species</p>
+                </div>
+                <div class="category" data-category="landmarks">
+                    <h4>Landmarks</h4>
+                    <p>Famous places around the world</p>
+                </div>
+                <div class="category" data-category="movies">
+                    <h4>Movies</h4>
+                    <p>Guess the movie title</p>
+                </div>
+                <div class="category" data-category="food">
+                    <h4>Food</h4>
+                    <p>Delicious dishes to identify</p>
+                </div>
             </div>
             <p>Selected category: <span id="selectedCategory">None</span></p>
-            <div id="statusMessage" class="status loading">Detecting image categories from GitHub...</div>
-            <button id="retryLoadBtn" style="display: none;">Retry Loading Images</button>
         </div>
         
         <div class="settings">
@@ -520,20 +506,20 @@
         
         <div class="game-area">
             <div class="image-container">
-                <img id="currentImage" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f8f9fa'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24' fill='%23ccc'%3ELoading categories...%3C/text%3E%3C/svg%3E">
+                <img id="currentImage" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f8f9fa'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24' fill='%23ccc'%3ESelect a category to start%3C/text%3E%3C/svg%3E">
             </div>
             <div class="answer-display" id="answerDisplay"></div>
             
             <div class="controls">
-                <button id="correctBtn" disabled>
+                <button id="correctBtn">
                     <span class="key-shortcut">←</span>
                     Correct!
                 </button>
-                <button id="pauseBtn" disabled>
+                <button id="pauseBtn">
                     <span class="key-shortcut">P</span>
                     Pause
                 </button>
-                <button id="passBtn" disabled>
+                <button id="passBtn">
                     <span class="key-shortcut">→</span>
                     Pass
                 </button>
@@ -543,7 +529,7 @@
                 Use keyboard shortcuts: ← for Correct, P for Pause, → for Pass
             </div>
             
-            <button id="startBtn" disabled>Start Game</button>
+            <button id="startBtn">Start Game</button>
         </div>
         
         <div class="game-over" id="gameOver">
@@ -565,12 +551,43 @@
                 <li>Game ends when either time runs out or all images are used</li>
                 <li>Press P or click Pause button to pause/resume the game</li>
             </ul>
-            <h3>Repository Structure</h3>
-            <p>Your repository should have an 'images' folder with subfolders for each category. Based on your description, you have an 'ATT' folder inside 'images'.</p>
+            <h3>How to Add Your Own Categories</h3>
+            <p>Edit the CATEGORIES object in the JavaScript to add your own image sets. Use the format: <code>category_name: ["image_url_1", "image_url_2", ...]</code></p>
         </div>
     </div>
 
     <script>
+        // Define your image categories here
+        const CATEGORIES = {
+            ATT: [
+                ![Adventure Cove Waterpark](images/ATT/Adventure Waterpark.jpg),
+                ![Adventure Cove Waterpark](images/ATT/Adventure Waterpark.jpg),
+                ![Adventure Cove Waterpark](images/ATT/Adventure Waterpark.jpg),
+                ![Adventure Cove Waterpark](images/ATT/Adventure Waterpark.jpg)
+            ],
+            landmarks: [
+                "https://raw.githubusercontent.com/username/repo/main/images/landmarks/eiffel_tower.jpg",
+                "https://raw.githubusercontent.com/username/repo/main/images/landmarks/statue_of_liberty.jpg",
+                "https://raw.githubusercontent.com/username/repo/main/images/landmarks/great_wall.jpg",
+                "https://raw.githubusercontent.com/username/repo/main/images/landmarks/taj_mahal.jpg",
+                "https://raw.githubusercontent.com/username/repo/main/images/landmarks/pyramids.jpg"
+            ],
+            movies: [
+                "https://raw.githubusercontent.com/username/repo/main/images/movies/jaws.jpg",
+                "https://raw.githubusercontent.com/username/repo/main/images/movies/star_wars.jpg",
+                "https://raw.githubusercontent.com/username/repo/main/images/movies/titanic.jpg",
+                "https://raw.githubusercontent.com/username/repo/main/images/movies/avatar.jpg",
+                "https://raw.githubusercontent.com/username/repo/main/images/movies/inception.jpg"
+            ],
+            food: [
+                "https://raw.githubusercontent.com/username/repo/main/images/food/pizza.jpg",
+                "https://raw.githubusercontent.com/username/repo/main/images/food/sushi.jpg",
+                "https://raw.githubusercontent.com/username/repo/main/images/food/burger.jpg",
+                "https://raw.githubusercontent.com/username/repo/main/images/food/tacos.jpg",
+                "https://raw.githubusercontent.com/username/repo/main/images/food/pasta.jpg"
+            ]
+        };
+
         document.addEventListener('DOMContentLoaded', function() {
             // Game elements
             const currentImageElement = document.getElementById('currentImage');
@@ -592,10 +609,8 @@
             const player2NameElement = document.getElementById('player2Name');
             const initialTimeInput = document.getElementById('initialTime');
             const passPenaltyInput = document.getElementById('passPenalty');
-            const categoriesContainer = document.getElementById('categoriesContainer');
+            const categoryElements = document.querySelectorAll('.category');
             const selectedCategoryElement = document.getElementById('selectedCategory');
-            const statusMessage = document.getElementById('statusMessage');
-            const retryLoadBtn = document.getElementById('retryLoadBtn');
             
             // Game state
             let currentPlayer = 1;
@@ -611,272 +626,58 @@
             let usedImages = [];
             let availableImages = [];
             let selectedCategory = null;
-            let categories = {};
+            
+            let currentImage = null;
             
             // Initialize the game
             function initGame() {
-                // Load saved data from localStorage
+                // Load player names from localStorage
                 const savedPlayer1Name = localStorage.getItem('player1Name');
                 const savedPlayer2Name = localStorage.getItem('player2Name');
                 
                 if (savedPlayer1Name) player1NameElement.value = savedPlayer1Name;
                 if (savedPlayer2Name) player2NameElement.value = savedPlayer2Name;
                 
-                // Set up retry button
-                retryLoadBtn.addEventListener('click', loadCategoriesFromRepo);
-                
-                // Automatically load categories from the images folder
-                loadCategoriesFromRepo();
-            }
-            
-            // Load categories from the repository
-            async function loadCategoriesFromRepo() {
-                showStatus('Detecting image categories from GitHub...', 'loading');
-                retryLoadBtn.style.display = 'none';
-                
-                try {
-                    // Extract repo info from the current URL
-                    const repoPath = window.location.pathname;
-                    const pathParts = repoPath.split('/');
-                    const username = pathParts[1];
-                    const repoName = pathParts[2];
-                    
-                    if (!username || !repoName) {
-                        throw new Error('Could not detect repository information from URL');
-                    }
-                    
-                    // Try multiple approaches to access the images
-                    await tryMultipleApproaches(username, repoName);
-                    
-                } catch (error) {
-                    console.error('Error loading from repository:', error);
-                    showStatus('Error loading categories. Using fallback images.', 'error');
-                    retryLoadBtn.style.display = 'block';
-                    // Load fallback categories if automatic detection fails
-                    loadFallbackCategories();
-                }
-            }
-            
-            // Try multiple approaches to access the images
-            async function tryMultipleApproaches(username, repoName) {
-                // Approach 1: Try GitHub API
-                try {
-                    const apiUrl = `https://api.github.com/repos/${username}/${repoName}/contents/images`;
-                    const response = await fetch(apiUrl);
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        await processCategoriesFromAPI(data, username, repoName);
-                        return;
-                    }
-                } catch (apiError) {
-                    console.log('GitHub API approach failed:', apiError);
-                }
-                
-                // Approach 2: Try direct directory listing (for GitHub Pages)
-                try {
-                    // This is a fallback method that might work for some GitHub Pages sites
-                    const images = await discoverImagesManually(username, repoName);
-                    if (images && Object.keys(images).length > 0) {
-                        categories = images;
-                        displayCategories(categories);
-                        showStatus(`Successfully loaded ${Object.keys(categories).length} categories!`, 'success');
-                        return;
-                    }
-                } catch (manualError) {
-                    console.log('Manual discovery approach failed:', manualError);
-                }
-                
-                // If all approaches fail
-                throw new Error('All image loading approaches failed');
-            }
-            
-            // Process categories from GitHub API response
-            async function processCategoriesFromAPI(data, username, repoName) {
-                // Filter out only directories
-                const categoryDirs = data.filter(item => item.type === 'dir');
-                
-                if (categoryDirs.length === 0) {
-                    showStatus('No category folders found in images directory.', 'error');
-                    retryLoadBtn.style.display = 'block';
-                    return;
-                }
-                
-                // Get images for each category
-                categories = {};
-                let loadedCategories = 0;
-                
-                for (const dir of categoryDirs) {
-                    try {
-                        const categoryResponse = await fetch(dir.url);
-                        if (!categoryResponse.ok) continue;
-                        
-                        const categoryData = await categoryResponse.json();
-                        
-                        // Filter image files (common extensions)
-                        const imageFiles = categoryData.filter(item => {
-                            const extension = item.name.split('.').pop().toLowerCase();
-                            return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension);
-                        });
-                        
-                        if (imageFiles.length > 0) {
-                            // Create image objects with name and URL
-                            categories[dir.name] = imageFiles.map(file => {
-                                const imageName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
-                                const imageUrl = file.download_url || 
-                                    `https://raw.githubusercontent.com/${username}/${repoName}/main/images/${dir.name}/${file.name}`;
-                                
-                                return {
-                                    name: imageName,
-                                    url: imageUrl
-                                };
-                            });
-                            loadedCategories++;
-                        }
-                    } catch (error) {
-                        console.error(`Error loading category ${dir.name}:`, error);
-                    }
-                }
-                
-                if (loadedCategories === 0) {
-                    showStatus('No images found in category folders.', 'error');
-                    retryLoadBtn.style.display = 'block';
-                    return;
-                }
-                
-                displayCategories(categories);
-                showStatus(`Successfully loaded ${loadedCategories} categories with images!`, 'success');
-            }
-            
-            // Manual discovery of images (fallback method)
-            async function discoverImagesManually(username, repoName) {
-                // Try to discover categories by checking for common directory names
-                const possibleCategories = ['ATT', 'animals', 'landmarks', 'food', 'movies', 'objects'];
-                const discoveredCategories = {};
-                
-                for (const category of possibleCategories) {
-                    try {
-                        // Test if the category directory exists by checking for a common image file
-                        const testImageUrl = `https://raw.githubusercontent.com/${username}/${repoName}/main/images/${category}/`;
-                        
-                        // We can't directly list directory contents without API, but we can test for specific files
-                        // For now, we'll assume the category exists and add a placeholder
-                        discoveredCategories[category] = [
-                            {
-                                name: `${category} image 1`,
-                                url: `https://raw.githubusercontent.com/${username}/${repoName}/main/images/${category}/image1.jpg`
-                            },
-                            {
-                                name: `${category} image 2`,
-                                url: `https://raw.githubusercontent.com/${username}/${repoName}/main/images/${category}/image2.jpg`
-                            }
-                        ];
-                    } catch (error) {
-                        console.log(`Category ${category} not found:`, error);
-                    }
-                }
-                
-                return discoveredCategories;
-            }
-            
-            // Load fallback categories if automatic detection fails
-            function loadFallbackCategories() {
-                categories = {
-                    ATT: [
-                        {
-                            name: "ATT Image 1",
-                            url: "https://picsum.photos/400/300?random=1"
-                        },
-                        {
-                            name: "ATT Image 2", 
-                            url: "https://picsum.photos/400/300?random=2"
-                        },
-                        {
-                            name: "ATT Image 3",
-                            url: "https://picsum.photos/400/300?random=3"
-                        }
-                    ],
-                    Animals: [
-                        {
-                            name: "Animal 1",
-                            url: "https://picsum.photos/400/300?animal"
-                        },
-                        {
-                            name: "Animal 2",
-                            url: "https://picsum.photos/401/300?animal"
-                        }
-                    ]
-                };
-                
-                displayCategories(categories);
-                showStatus('Using fallback images. Add your own images to the /images folder.', 'success');
-            }
-            
-            // Display categories UI
-            function displayCategories(cats) {
-                categoriesContainer.innerHTML = '';
-                
-                if (Object.keys(cats).length === 0) {
-                    categoriesContainer.innerHTML = '<div class="category-placeholder">No categories found</div>';
-                    return;
-                }
-                
-                for (const [categoryName, imageUrls] of Object.entries(cats)) {
-                    const categoryElement = document.createElement('div');
-                    categoryElement.className = 'category';
-                    categoryElement.setAttribute('data-category', categoryName);
-                    categoryElement.innerHTML = `
-                        <h4>${categoryName}</h4>
-                        <p>${imageUrls.length} images</p>
-                    `;
-                    
-                    categoryElement.addEventListener('click', function() {
+                // Set up category selection
+                categoryElements.forEach(category => {
+                    category.addEventListener('click', function() {
                         // Remove selected class from all categories
-                        document.querySelectorAll('.category').forEach(c => c.classList.remove('selected'));
+                        categoryElements.forEach(c => c.classList.remove('selected'));
                         // Add selected class to clicked category
                         this.classList.add('selected');
                         // Set the selected category
-                        selectedCategory = categoryName;
-                        selectedCategoryElement.textContent = selectedCategory;
+                        selectedCategory = this.getAttribute('data-category');
+                        selectedCategoryElement.textContent = selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1);
                         
                         // Enable start button
                         startBtn.disabled = false;
                     });
-                    
-                    categoriesContainer.appendChild(categoryElement);
-                }
-                
-                // Auto-select the first category if available
-                if (Object.keys(cats).length > 0) {
-                    const firstCategory = Object.keys(cats)[0];
-                    setTimeout(() => {
-                        const firstCategoryElement = document.querySelector(`.category[data-category="${firstCategory}"]`);
-                        if (firstCategoryElement) {
-                            firstCategoryElement.click();
-                        }
-                    }, 100);
-                }
-            }
-            
-            // Show status message
-            function showStatus(message, type) {
-                statusMessage.textContent = message;
-                statusMessage.className = `status ${type}`;
-                statusMessage.style.display = 'block';
+                });
             }
             
             // Function to start the game
             function startGame() {
-                if (!selectedCategory || !categories[selectedCategory]) {
-                    showStatus('Please select a category to start the game.', 'error');
+                if (!selectedCategory) {
+                    alert('Please select a category to start the game.');
                     return;
                 }
                 
                 // Get images for selected category
-                availableImages = categories[selectedCategory];
+                availableImages = CATEGORIES[selectedCategory].map(url => {
+                    // Extract filename from URL for the answer
+                    const urlParts = url.split('/');
+                    let filename = urlParts[urlParts.length - 1];
+                    // Remove extension
+                    filename = filename.replace(/\.[^/.]+$/, "");
+                    
+                    return {
+                        name: filename,
+                        url: url
+                    };
+                });
                 
                 if (availableImages.length < 2) {
-                    showStatus('Selected category has less than 2 images. Please add more images to this category.', 'error');
+                    alert('Selected category has less than 2 images. Please add more images to this category.');
                     return;
                 }
                 
@@ -914,7 +715,7 @@
                 gameOverElement.style.display = 'none';
                 
                 // Disable category selection during game
-                document.querySelectorAll('.category').forEach(category => {
+                categoryElements.forEach(category => {
                     category.style.pointerEvents = 'none';
                 });
                 
@@ -1138,7 +939,7 @@
                 player2NameElement.disabled = false;
                 
                 // Re-enable category selection
-                document.querySelectorAll('.category').forEach(category => {
+                categoryElements.forEach(category => {
                     category.style.pointerEvents = 'auto';
                 });
                 

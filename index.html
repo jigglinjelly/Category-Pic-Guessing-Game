@@ -168,6 +168,32 @@
             gap: 20px;
             margin-bottom: 30px;
         }
+        .toggle-btn {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+
+        .toggle-btn:hover {
+            background: #1976d2;
+        }
+
+        .categories.hidden {
+            display: none;
+        }
+
+        .category p {
+            display: none;
+        }
+
+        .category.selected p {
+            display: block;
+        }
         
         button {
             padding: 15px 30px;
@@ -531,7 +557,10 @@
         </div>
 
         <div class="category-selection">
-            <h3>Select Image Category</h3>
+            <h3>Select Image Category
+                <button id="toggleCategories" class="toggle-btn">Hide</button>
+            </h3>
+
             <div class="categories">
                 <div class="category" data-category="ATT">
                     <h4>ATT</h4>
@@ -953,7 +982,38 @@
             const passPenaltyInput = document.getElementById('passPenalty');
             const categoryElements = document.querySelectorAll('.category');
             const selectedCategoryElement = document.getElementById('selectedCategory');
-            
+            // Get the toggle button
+            const toggleBtn = document.getElementById('toggleCategories');
+
+            // Toggle categories visibility
+            function toggleCategories() {
+                const categoriesContainer = document.querySelector('.categories');
+                categoriesContainer.classList.toggle('hidden');
+                
+                // Update button text
+                if (categoriesContainer.classList.contains('hidden')) {
+                    toggleBtn.textContent = 'Show';
+                } else {
+                    toggleBtn.textContent = 'Hide';
+                }
+            }
+
+            function selectCategory(categoryName) {
+                // Remove selected class from all categories
+                categoryElements.forEach(cat => {
+                    cat.classList.remove('selected');
+                });
+                
+                // Add selected class to clicked category
+                const selectedCategory = document.querySelector(`[data-category="${categoryName}"]`);
+                selectedCategory.classList.add('selected');
+                
+                // Update selected category display
+                selectedCategoryElement.textContent = categoryName;
+                
+                // Enable start button
+                startBtn.disabled = false;
+            }
             // Game state
             let currentPlayer = 1;
             let player1Score = 0;
@@ -1342,6 +1402,7 @@
             passBtn.addEventListener('click', handlePass);
             pauseBtn.addEventListener('click', togglePause);
             endGameBtn.addEventListener('click', endGamePrematurely);
+            toggleBtn.addEventListener('click', toggleCategories);
             
             // Keyboard shortcuts
             document.addEventListener('keydown', function(e) {

@@ -699,6 +699,7 @@
                 "Seah Kian Peng.jpg",
                 "Sun Xueling.jpg",
                 "Sylvia Lim.jpg",
+                "Tan Chuan Jin.jpg",
                 "Tan See Leng.jpg",
                 "Teo Chee Hean.jpg",
                 "Tin Pei Ling.jpg",
@@ -1072,12 +1073,15 @@
                     return;
                 }
                 
+                // Show loading state
+                startBtn.disabled = true;
+                startBtn.textContent = "Loading Images...";
+                
                 // Get images for selected category
-                availableImages = CATEGORIES[selectedCategory].map(url => {
-                    // Extract filename from URL for the answer
+                const categoryImageUrls = CATEGORIES[selectedCategory];
+                availableImages = categoryImageUrls.map(url => {
                     const urlParts = url.split('/');
                     let filename = urlParts[urlParts.length - 1];
-                    // Remove extension
                     filename = filename.replace(/\.[^/.]+$/, "");
                     
                     return {
@@ -1088,62 +1092,76 @@
                 
                 if (availableImages.length < 2) {
                     alert('Selected category has less than 2 images. Please add more images to this category.');
+                    startBtn.disabled = false;
+                    startBtn.textContent = "Start Game";
                     return;
                 }
                 
-                // Save player names
-                localStorage.setItem('player1Name', player1NameElement.value);
-                localStorage.setItem('player2Name', player2NameElement.value);
-                
-                gameActive = true;
-                gamePaused = false;
-                player1Time = parseFloat(initialTimeInput.value);
-                player2Time = parseFloat(initialTimeInput.value);
-                player1Score = 0;
-                player2Score = 0;
-                currentPlayer = 1;
-                usedImages = [];
-                
-                player1ScoreElement.textContent = "0";
-                player2ScoreElement.textContent = "0";
-                player1TimeElement.textContent = `Time: ${player1Time.toFixed(1)}s`;
-                player2TimeElement.textContent = `Time: ${player2Time.toFixed(1)}s`;
-                
-                player1Element.classList.add('active');
-                player2Element.classList.remove('active');
-                
-                correctBtn.disabled = false;
-                passBtn.disabled = false;
-                pauseBtn.disabled = false;
-                endGameBtn.disabled = false;
-                pauseBtn.textContent = "Pause";
-                pauseBtn.classList.remove("paused");
-                startBtn.disabled = true;
-                initialTimeInput.disabled = true;
-                passPenaltyInput.disabled = true;
-                player1NameElement.disabled = true;
-                player2NameElement.disabled = true;
-                gameOverElement.style.display = 'none';
-                
-                // Disable category selection during game
-                categoryElements.forEach(category => {
-                    category.style.pointerEvents = 'none';
+                // Preload all images before starting game
+                preloadImages(categoryImageUrls, () => {
+                    // Images loaded, start the game
+                    startBtn.textContent = "Start Game";
+                    
+                    // Save player names
+                    localStorage.setItem('player1Name', player1NameElement.value);
+                    localStorage.setItem('player2Name', player2NameElement.value);
+                    
+                    gameActive = true;
+                    gamePaused = false;
+                    player1Time = parseFloat(initialTimeInput.value);
+                    player2Time = parseFloat(initialTimeInput.value);
+                    player1Score = 0;
+                    player2Score = 0;
+                    currentPlayer = 1;
+                    usedImages = [];
+                    
+                    player1ScoreElement.textContent = "0";
+                    player2ScoreElement.textContent = "0";
+                    player1TimeElement.textContent = `Time: ${player1Time.toFixed(1)}s`;
+                    player2TimeElement.textContent = `Time: ${player2Time.toFixed(1)}s`;
+                    
+                    player1Element.classList.add('active');
+                    player2Element.classList.remove('active');
+                    
+                    correctBtn.disabled = false;
+                    passBtn.disabled = false;
+                    pauseBtn.disabled = false;
+                    endGameBtn.disabled = false;
+                    pauseBtn.textContent = "Pause";
+                    pauseBtn.classList.remove("paused");
+                    startBtn.disabled = true;
+                    initialTimeInput.disabled = true;
+                    passPenaltyInput.disabled = true;
+                    player1NameElement.disabled = true;
+                    player2NameElement.disabled = true;
+                    gameOverElement.style.display = 'none';
+                    
+                    // Disable category selection during game
+                    categoryElements.forEach(category => {
+                        category.style.pointerEvents = 'none';
+                    });
+                    
+                    // Clear any answer display
+                    answerDisplayElement.textContent = "";
+                    answerDisplayElement.className = "answer-display";
+                    
+                    // Start with a random image
+                    nextImage();
+                    
+                    // Start the timer for the first player
+                    lastTimerUpdate = Date.now();
+                    startTimer();
                 });
-                
-                // Clear any answer display
-                answerDisplayElement.textContent = "";
-                answerDisplayElement.className = "answer-display";
-                
-                // Start with a random image
-                nextImage();
-                
-                // Start the timer for the first player
-                lastTimerUpdate = Date.now();
-                startTimer();
             }
-            
             // Function to handle next image
             function nextImage() {
+                // Pause timer during image load
+                const wasPaused = gamePaused;
+                if (!wasPaused) {
+                    gamePaused = true;
+                    stopTimer();
+                }
+                
                 // Filter out used images
                 const unusedImages = availableImages.filter((img, index) => !usedImages.includes(index));
                 
@@ -1157,7 +1175,26 @@
                 currentImage = availableImages[selectedImageIndex];
                 usedImages.push(selectedImageIndex);
                 
-                currentImageElement.src = currentImage.url;
+                // Create new image to check when it's loaded
+                const newImage = new Image();
+                newImage.onload = () => {
+                    currentImageElement.src = currentImage.url;
+                    // Resume timer only if it wasn't already paused
+                    if (!wasPaused) {
+                        gamePaused = false;
+                        lastTimerUpdate = Date.now();
+                        startTimer();
+                    }
+                };
+                newImage.onerror = () => {
+                    currentImageElement.src = currentImage.url;
+                    if (!wasPaused) {
+                        gamePaused = false;
+                        lastTimerUpdate = Date.now();
+                        startTimer();
+                    }
+                };
+                newImage.src = currentImage.url;
             }
             
             // Function to start the timer for the current player
@@ -1398,7 +1435,40 @@
                 endGame("Game ended prematurely.");
             }            
 
+             // Add this function to preload images
+            function preloadImages(imageUrls, callback) {
+                let loaded = 0;
+                const total = imageUrls.length;
+                
+                // If no images to load, call callback immediately
+                if (total === 0) {
+                    callback();
+                    return;
+                }
+                
+                imageUrls.forEach(url => {
+                    const img = new Image();
+                    img.onload = () => {
+                        loaded++;
+                        if (loaded === total) {
+                            callback();
+                        }
+                    };
+                    img.onerror = () => {
+                        loaded++; // Count errors too to avoid infinite waiting
+                        if (loaded === total) {
+                            callback();
+                        }
+                    };
+                    img.src = url;
+                });
+            }
 
+            // Add this function to show loading progress (optional but helpful)
+            function updateLoadingProgress(loaded, total) {
+                const progress = Math.round((loaded / total) * 100);
+                startBtn.textContent = `Loading... ${progress}%`;
+            }           
 
             // Initialize the game
             initGame();

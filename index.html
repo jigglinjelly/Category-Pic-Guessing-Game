@@ -154,7 +154,7 @@
             overflow: hidden;
         }
 
-        .sidebar-top {
+        /*.sidebar-top {
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
@@ -162,7 +162,7 @@
             padding: 20px;
             background: white;
             border-bottom: 2px solid #e9ecef;
-        }
+        }*/
 
         .sidebar-scrollable {
             flex: 1;
@@ -517,7 +517,7 @@
             }
             
             .sidebar-content {
-                flex-direction: row;
+                flex-direction: column;
             }
             
             .sidebar-top {
@@ -588,9 +588,10 @@
 
         <!-- Sidebar -->
         <div class="sidebar">
+            <!-- Replace the entire sidebar-content section with this code -->
             <div class="sidebar-content">
-                <!-- Always Visible Sections -->
-                <div class="sidebar-top">
+                <!-- Scrollable Sections (everything is now scrollable) -->
+                <div class="sidebar-scrollable">
                     <!-- Players Section -->
                     <div class="sidebar-section">
                         <h3>Players</h3>
@@ -605,30 +606,6 @@
                                 <div class="score">0</div>
                                 <div class="time-bank">Time: 60.0s</div>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Game Controls -->
-                    <div class="sidebar-section">
-                        <h3>Game Controls</h3>
-                        <div class="controls">
-                            <button id="passBtn">
-                                <span class="key-shortcut">←</span>
-                                Pass
-                            </button>
-                            <button id="correctBtn">
-                                <span class="key-shortcut">→</span>
-                                Correct!
-                            </button>
-                            <button id="pauseBtn">
-                                <span class="key-shortcut">P</span>
-                                Pause
-                            </button>
-                            <button id="startBtn">Start Game</button>
-                            <button id="endGameBtn">
-                                <span class="key-shortcut">X</span>
-                                End Game
-                            </button>
                         </div>
                     </div>
 
@@ -652,10 +629,31 @@
                             <input type="number" id="passPenalty" value="5" min="0" max="30">
                         </label>
                     </div>
-                </div>
 
-                <!-- Scrollable Sections -->
-                <div class="sidebar-scrollable">
+                    <!-- Game Controls (MOVED HERE) -->
+                    <div class="sidebar-section">
+                        <h3>Game Controls</h3>
+                        <div class="controls">
+                            <button id="passBtn">
+                                <span class="key-shortcut">←</span>
+                                Pass
+                            </button>
+                            <button id="correctBtn">
+                                <span class="key-shortcut">→</span>
+                                Correct!
+                            </button>
+                            <button id="pauseBtn">
+                                <span class="key-shortcut">P</span>
+                                Pause
+                            </button>
+                            <button id="startBtn">Start Game</button>
+                            <button id="endGameBtn">
+                                <span class="key-shortcut">X</span>
+                                End Game
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Category Selection -->
                     <div class="sidebar-section">
                         <h3>Image Category
@@ -1311,7 +1309,7 @@
                     
                     // In the startGame() function, add this line:
                     answerOverlay.className = 'answer-overlay'; // Hide overlay at game start
-                    
+
                     nextImage();
                     
                     lastTimerUpdate = Date.now();

@@ -431,8 +431,22 @@
             word-break: break-all;
             border: 1px dashed #ccc;
         }
-        
-        @media (max-width: 600px) {
+        .players-container.four-players {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .players-container.four-players .player {
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .players-container.four-players {
+                grid-template-columns: 1fr;
+            }
+        }
+                @media (max-width: 600px) {
             .players-container {
                 flex-direction: column;
                 align-items: center;
@@ -490,23 +504,31 @@
         <div class="settings">
             <h3>Game Settings</h3>
             <label>
+                Number of Players:
+                <select id="playerCount">
+                    <option value="2">2 Players</option>
+                    <option value="3">3 Players</option>
+                    <option value="4">4 Players</option>
+                </select>
+            </label>
+            <label>
                 Initial Time (seconds):
-                <input type="number" id="initialTime" value="60" min="10" max="300">
+                <input type="number" id="initialTime" value="300" min="10" max="300">
             </label>
             <label>
                 Pass Penalty (seconds):
-                <input type="number" id="passPenalty" value="5" min="0" max="30">
+                <input type="number" id="passPenalty" value="10" min="0" max="30">
             </label>
         </div>
         
-        <div class="players-container">
+        <div class="players-container" id="playersContainer">
             <div class="player" id="player1">
                 <h2>
                     <span>Player</span>
                     <input type="text" class="player-name" id="player1Name" value="Player 1" maxlength="12">
                 </h2>
                 <div class="score">0</div>
-                <div class="time-bank">Time: 60.0s</div>
+                <div class="time-bank">Time: 300.0s</div>
             </div>
             <div class="player" id="player2">
                 <h2>
@@ -514,8 +536,9 @@
                     <input type="text" class="player-name" id="player2Name" value="Player 2" maxlength="12">
                 </h2>
                 <div class="score">0</div>
-                <div class="time-bank">Time: 60.0s</div>
+                <div class="time-bank">Time: 300.0s</div>
             </div>
+            <!-- Players 3 and 4 will be added dynamically -->
         </div>
         
         <div class="game-area">
@@ -979,56 +1002,20 @@
             const restartBtn = document.getElementById('restartBtn');
             const gameOverElement = document.getElementById('gameOver');
             const winnerMessageElement = document.getElementById('winnerMessage');
-            const player1Element = document.getElementById('player1');
-            const player2Element = document.getElementById('player2');
-            const player1ScoreElement = player1Element.querySelector('.score');
-            const player2ScoreElement = player2Element.querySelector('.score');
-            const player1TimeElement = player1Element.querySelector('.time-bank');
-            const player2TimeElement = player2Element.querySelector('.time-bank');
-            const player1NameElement = document.getElementById('player1Name');
-            const player2NameElement = document.getElementById('player2Name');
+            const playersContainer = document.getElementById('playersContainer');
+            const playerCountSelect = document.getElementById('playerCount');
             const initialTimeInput = document.getElementById('initialTime');
             const passPenaltyInput = document.getElementById('passPenalty');
             const categoryElements = document.querySelectorAll('.category');
             const selectedCategoryElement = document.getElementById('selectedCategory');
-            // Get the toggle button
             const toggleBtn = document.getElementById('toggleCategories');
 
-            // Toggle categories visibility
-            function toggleCategories() {
-                const categoriesContainer = document.querySelector('.categories');
-                categoriesContainer.classList.toggle('hidden');
-                
-                // Update button text
-                if (categoriesContainer.classList.contains('hidden')) {
-                    toggleBtn.textContent = 'Show';
-                } else {
-                    toggleBtn.textContent = 'Hide';
-                }
-            }
-
-            function selectCategory(categoryName) {
-                // Remove selected class from all categories
-                categoryElements.forEach(cat => {
-                    cat.classList.remove('selected');
-                });
-                
-                // Add selected class to clicked category
-                const selectedCategory = document.querySelector(`[data-category="${categoryName}"]`);
-                selectedCategory.classList.add('selected');
-                
-                // Update selected category display
-                selectedCategoryElement.textContent = categoryName;
-                
-                // Enable start button
-                startBtn.disabled = false;
-            }
             // Game state
             let currentPlayer = 1;
-            let player1Score = 0;
-            let player2Score = 0;
-            let player1Time = 60.0;
-            let player2Time = 60.0;
+            let playerScores = [0, 0, 0, 0]; // Index 0 unused, players start from 1
+            let playerTimes = [0, 60, 60, 60, 60]; // Index 0 unused, players start from 1
+            let playerNames = ['', 'Player 1', 'Player 2', 'Player 3', 'Player 4'];
+            let totalPlayers = 2;
             let timerInterval = null;
             let gameActive = false;
             let gamePaused = false;
@@ -1037,35 +1024,111 @@
             let usedImages = [];
             let availableImages = [];
             let selectedCategory = null;
-            
             let currentImage = null;
-            
+
+            // Toggle categories visibility
+            function toggleCategories() {
+                const categoriesContainer = document.querySelector('.categories');
+                categoriesContainer.classList.toggle('hidden');
+                
+                if (categoriesContainer.classList.contains('hidden')) {
+                    toggleBtn.textContent = 'Show';
+                } else {
+                    toggleBtn.textContent = 'Hide';
+                }
+            }
+
+            // Create player elements dynamically
+            function createPlayerElements() {
+                totalPlayers = parseInt(playerCountSelect.value);
+                
+                // Clear existing players except first two
+                const existingPlayers = playersContainer.querySelectorAll('.player');
+                for (let i = 2; i < existingPlayers.length; i++) {
+                    existingPlayers[i].remove();
+                }
+                
+                // Update player 1 and 2 names based on total players
+                document.getElementById('player1Name').value = totalPlayers >= 1 ? 'Player 1' : '';
+                document.getElementById('player2Name').value = totalPlayers >= 2 ? 'Player 2' : '';
+                
+                // Create players 3 and 4 if needed
+                if (totalPlayers >= 3) {
+                    const player3 = document.createElement('div');
+                    player3.className = 'player';
+                    player3.id = 'player3';
+                    player3.innerHTML = `
+                        <h2>
+                            <span>Player</span>
+                            <input type="text" class="player-name" id="player3Name" value="Player 3" maxlength="12">
+                        </h2>
+                        <div class="score">0</div>
+                        <div class="time-bank">Time: 60.0s</div>
+                    `;
+                    playersContainer.appendChild(player3);
+                }
+                
+                if (totalPlayers >= 4) {
+                    const player4 = document.createElement('div');
+                    player4.className = 'player';
+                    player4.id = 'player4';
+                    player4.innerHTML = `
+                        <h2>
+                            <span>Player</span>
+                            <input type="text" class="player-name" id="player4Name" value="Player 4" maxlength="12">
+                        </h2>
+                        <div class="score">0</div>
+                        <div class="time-bank">Time: 60.0s</div>
+                    `;
+                    playersContainer.appendChild(player4);
+                }
+                
+                // Update container class for styling
+                playersContainer.className = totalPlayers === 4 ? 'players-container four-players' : 'players-container';
+                
+                // Reset all player states
+                resetPlayerStates();
+            }
+
+            // Reset all player visual states
+            function resetPlayerStates() {
+                for (let i = 1; i <= 4; i++) {
+                    const playerElement = document.getElementById(`player${i}`);
+                    if (playerElement) {
+                        playerElement.classList.remove('active');
+                        playerElement.querySelector('.score').textContent = '0';
+                    }
+                }
+            }
+
             // Initialize the game
             function initGame() {
-                // Load player names from localStorage
-                const savedPlayer1Name = localStorage.getItem('player1Name');
-                const savedPlayer2Name = localStorage.getItem('player2Name');
+                createPlayerElements();
                 
-                if (savedPlayer1Name) player1NameElement.value = savedPlayer1Name;
-                if (savedPlayer2Name) player2NameElement.value = savedPlayer2Name;
+                // Load player names from localStorage
+                for (let i = 1; i <= 4; i++) {
+                    const savedName = localStorage.getItem(`player${i}Name`);
+                    const nameElement = document.getElementById(`player${i}Name`);
+                    if (savedName && nameElement) {
+                        nameElement.value = savedName;
+                    }
+                }
                 
                 // Set up category selection
                 categoryElements.forEach(category => {
                     category.addEventListener('click', function() {
-                        // Remove selected class from all categories
                         categoryElements.forEach(c => c.classList.remove('selected'));
-                        // Add selected class to clicked category
                         this.classList.add('selected');
-                        // Set the selected category
                         selectedCategory = this.getAttribute('data-category');
                         selectedCategoryElement.textContent = selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1);
-                        
-                        // Enable start button
                         startBtn.disabled = false;
                     });
                 });
+                
+                // Set up player count change listener
+                playerCountSelect.addEventListener('change', createPlayerElements);
             }
-            
+
             // Function to start the game
             function startGame() {
                 if (!selectedCategory) {
@@ -1073,11 +1136,9 @@
                     return;
                 }
                 
-                // Show loading state
                 startBtn.disabled = true;
                 startBtn.textContent = "Loading Images...";
                 
-                // Get images for selected category
                 const categoryImageUrls = CATEGORIES[selectedCategory];
                 availableImages = categoryImageUrls.map(url => {
                     const urlParts = url.split('/');
@@ -1097,31 +1158,43 @@
                     return;
                 }
                 
-                // Preload all images before starting game
                 preloadImages(categoryImageUrls, () => {
-                    // Images loaded, start the game
                     startBtn.textContent = "Start Game";
                     
-                    // Save player names
-                    localStorage.setItem('player1Name', player1NameElement.value);
-                    localStorage.setItem('player2Name', player2NameElement.value);
+                    // Save player names and update total players
+                    totalPlayers = parseInt(playerCountSelect.value);
+                    for (let i = 1; i <= totalPlayers; i++) {
+                        const nameElement = document.getElementById(`player${i}Name`);
+                        if (nameElement) {
+                            localStorage.setItem(`player${i}Name`, nameElement.value);
+                            playerNames[i] = nameElement.value;
+                        }
+                    }
                     
                     gameActive = true;
                     gamePaused = false;
-                    player1Time = parseFloat(initialTimeInput.value);
-                    player2Time = parseFloat(initialTimeInput.value);
-                    player1Score = 0;
-                    player2Score = 0;
+                    
+                    // Initialize player times and scores
+                    const initialTime = parseFloat(initialTimeInput.value);
+                    for (let i = 1; i <= 4; i++) {
+                        playerScores[i] = 0;
+                        playerTimes[i] = initialTime;
+                    }
+                    
                     currentPlayer = 1;
                     usedImages = [];
                     
-                    player1ScoreElement.textContent = "0";
-                    player2ScoreElement.textContent = "0";
-                    player1TimeElement.textContent = `Time: ${player1Time.toFixed(1)}s`;
-                    player2TimeElement.textContent = `Time: ${player2Time.toFixed(1)}s`;
+                    // Update UI for all players
+                    for (let i = 1; i <= totalPlayers; i++) {
+                        const playerElement = document.getElementById(`player${i}`);
+                        if (playerElement) {
+                            playerElement.querySelector('.score').textContent = "0";
+                            playerElement.querySelector('.time-bank').textContent = `Time: ${initialTime.toFixed(1)}s`;
+                        }
+                    }
                     
-                    player1Element.classList.add('active');
-                    player2Element.classList.remove('active');
+                    resetPlayerStates();
+                    document.getElementById('player1').classList.add('active');
                     
                     correctBtn.disabled = false;
                     passBtn.disabled = false;
@@ -1132,37 +1205,36 @@
                     startBtn.disabled = true;
                     initialTimeInput.disabled = true;
                     passPenaltyInput.disabled = true;
-                    player1NameElement.disabled = true;
-                    player2NameElement.disabled = true;
-                    gameOverElement.style.display = 'none';
+                    playerCountSelect.disabled = true;
                     
-                    // Disable category selection during game
+                    // Disable all name inputs
+                    for (let i = 1; i <= totalPlayers; i++) {
+                        const nameElement = document.getElementById(`player${i}Name`);
+                        if (nameElement) nameElement.disabled = true;
+                    }
+                    
                     categoryElements.forEach(category => {
                         category.style.pointerEvents = 'none';
                     });
                     
-                    // Clear any answer display
                     answerDisplayElement.textContent = "";
                     answerDisplayElement.className = "answer-display";
                     
-                    // Start with a random image
                     nextImage();
                     
-                    // Start the timer for the first player
                     lastTimerUpdate = Date.now();
                     startTimer();
                 });
             }
+
             // Function to handle next image
             function nextImage() {
-                // Pause timer during image load
                 const wasPaused = gamePaused;
                 if (!wasPaused) {
                     gamePaused = true;
                     stopTimer();
                 }
                 
-                // Filter out used images
                 const unusedImages = availableImages.filter((img, index) => !usedImages.includes(index));
                 
                 if (unusedImages.length === 0) {
@@ -1175,11 +1247,9 @@
                 currentImage = availableImages[selectedImageIndex];
                 usedImages.push(selectedImageIndex);
                 
-                // Create new image to check when it's loaded
                 const newImage = new Image();
                 newImage.onload = () => {
                     currentImageElement.src = currentImage.url;
-                    // Resume timer only if it wasn't already paused
                     if (!wasPaused) {
                         gamePaused = false;
                         lastTimerUpdate = Date.now();
@@ -1196,7 +1266,7 @@
                 };
                 newImage.src = currentImage.url;
             }
-            
+
             // Function to start the timer for the current player
             function startTimer() {
                 if (timerInterval) {
@@ -1207,27 +1277,21 @@
                     if (!gameActive || gamePaused) return;
                     
                     const now = Date.now();
-                    const delta = (now - lastTimerUpdate) / 1000; // Convert to seconds
+                    const delta = (now - lastTimerUpdate) / 1000;
                     lastTimerUpdate = now;
                     
-                    if (currentPlayer === 1) {
-                        player1Time -= delta;
-                        player1TimeElement.textContent = `Time: ${Math.max(0, player1Time).toFixed(1)}s`;
-                        
-                        if (player1Time <= 0) {
-                            endGame(`${player1NameElement.value} ran out of time!`);
-                        }
-                    } else {
-                        player2Time -= delta;
-                        player2TimeElement.textContent = `Time: ${Math.max(0, player2Time).toFixed(1)}s`;
-                        
-                        if (player2Time <= 0) {
-                            endGame(`${player2NameElement.value} ran out of time!`);
-                        }
+                    playerTimes[currentPlayer] -= delta;
+                    const playerElement = document.getElementById(`player${currentPlayer}`);
+                    if (playerElement) {
+                        playerElement.querySelector('.time-bank').textContent = `Time: ${Math.max(0, playerTimes[currentPlayer]).toFixed(1)}s`;
+                    }
+                    
+                    if (playerTimes[currentPlayer] <= 0) {
+                        endGame(`${playerNames[currentPlayer]} ran out of time!`);
                     }
                 }, 100);
             }
-            
+
             // Function to stop the timer
             function stopTimer() {
                 if (timerInterval) {
@@ -1235,7 +1299,7 @@
                     timerInterval = null;
                 }
             }
-            
+
             // Function to toggle pause state
             function togglePause() {
                 if (!gameActive) return;
@@ -1257,52 +1321,63 @@
                     passBtn.disabled = false;
                 }
             }
-            
+
+            // Function to switch to next player
+            function switchPlayer() {
+                // Remove active class from current player
+                document.getElementById(`player${currentPlayer}`).classList.remove('active');
+                
+                // Move to next player (loop back to 1 after last player)
+                currentPlayer = currentPlayer % totalPlayers + 1;
+                
+                // Add active class to new current player
+                document.getElementById(`player${currentPlayer}`).classList.add('active');
+                
+                // Update all time displays
+                for (let i = 1; i <= totalPlayers; i++) {
+                    const playerElement = document.getElementById(`player${i}`);
+                    if (playerElement) {
+                        playerElement.querySelector('.time-bank').textContent = `Time: ${playerTimes[i].toFixed(1)}s`;
+                    }
+                }
+            }
+
             // Function to display answer
             function displayAnswer(isCorrect) {
-                // Stop the timer while showing the answer
                 stopTimer();
                 
                 answerDisplayElement.textContent = `Correct answer: ${currentImage.name}`;
                 answerDisplayElement.className = isCorrect ? 
                     "answer-display correct-answer" : "answer-display pass-answer";
                 
-                // Clear any existing timeout
                 if (answerTimeout) {
                     clearTimeout(answerTimeout);
                 }
                 
-                // Disable buttons temporarily
                 correctBtn.disabled = true;
                 passBtn.disabled = true;
                 pauseBtn.disabled = true;
                 endGameBtn.disabled = true;
                 
-                // Set timeout to continue game after showing answer
                 answerTimeout = setTimeout(() => {
                     answerDisplayElement.textContent = "";
                     answerDisplayElement.className = "answer-display";
                     
-                    // Check if all images have been used
                     const unusedImages = availableImages.filter((img, index) => !usedImages.includes(index));
                     if (unusedImages.length === 0) {
                         endGame("All images have been used!");
                         return;
                     }
                     
-                    // Update last timer update time before restarting
                     lastTimerUpdate = Date.now();
                     
                     if (isCorrect) {
-                        // After correct answer, switch player and show next image
                         switchPlayer();
                         nextImage();
                     } else {
-                        // After pass, just show next image for same player
                         nextImage();
                     }
                     
-                    // Re-enable buttons and restart timer
                     correctBtn.disabled = false;
                     passBtn.disabled = false;
                     pauseBtn.disabled = false;
@@ -1310,66 +1385,37 @@
                     startTimer();
                 }, 2000);
             }
-            
-            // Function to switch player
-            function switchPlayer() {
-                currentPlayer = currentPlayer === 1 ? 2 : 1;
-                
-                if (currentPlayer === 1) {
-                    player1Element.classList.add('active');
-                    player2Element.classList.remove('active');
-                } else {
-                    player1Element.classList.remove('active');
-                    player2Element.classList.add('active');
-                }
-                
-                // Update timer display when switching players
-                player1TimeElement.textContent = `Time: ${player1Time.toFixed(1)}s`;
-                player2TimeElement.textContent = `Time: ${player2Time.toFixed(1)}s`;
-            }
-            
+
             // Function to handle correct answer
             function handleCorrect() {
                 if (!gameActive || gamePaused) return;
                 
-                if (currentPlayer === 1) {
-                    player1Score++;
-                    player1ScoreElement.textContent = player1Score;
-                } else {
-                    player2Score++;
-                    player2ScoreElement.textContent = player2Score;
-                }
+                playerScores[currentPlayer]++;
+                document.getElementById(`player${currentPlayer}`).querySelector('.score').textContent = playerScores[currentPlayer];
                 
-                // Display answer in green
                 displayAnswer(true);
             }
-            
+
             // Function to handle pass
             function handlePass() {
                 if (!gameActive || gamePaused) return;
                 
-                // Apply time penalty
                 const penalty = parseFloat(passPenaltyInput.value);
-                if (currentPlayer === 1) {
-                    player1Time -= penalty;
-                    player1TimeElement.textContent = `Time: ${player1Time.toFixed(1)}s`;
-                    if (player1Time <= 0) {
-                        endGame(`${player1NameElement.value} ran out of time!`);
-                        return;
-                    }
-                } else {
-                    player2Time -= penalty;
-                    player2TimeElement.textContent = `Time: ${player2Time.toFixed(1)}s`;
-                    if (player2Time <= 0) {
-                        endGame(`${player2NameElement.value} ran out of time!`);
-                        return;
-                    }
+                playerTimes[currentPlayer] -= penalty;
+                
+                const playerElement = document.getElementById(`player${currentPlayer}`);
+                if (playerElement) {
+                    playerElement.querySelector('.time-bank').textContent = `Time: ${playerTimes[currentPlayer].toFixed(1)}s`;
                 }
                 
-                // Display answer in red
+                if (playerTimes[currentPlayer] <= 0) {
+                    endGame(`${playerNames[currentPlayer]} ran out of time!`);
+                    return;
+                }
+                
                 displayAnswer(false);
             }
-            
+
             // Function to end the game
             function endGame(reason = "") {
                 gameActive = false;
@@ -1378,69 +1424,97 @@
                 if (answerTimeout) {
                     clearTimeout(answerTimeout);
                 }
-                // Show the current answer when game ends
+                
                 if (currentImage) {
                     answerDisplayElement.textContent = `Final Answer: ${currentImage.name}`;
                     answerDisplayElement.className = "answer-display correct-answer";
                 }
+                
                 correctBtn.disabled = true;
                 passBtn.disabled = true;
                 pauseBtn.disabled = true;
                 startBtn.disabled = false;
-                endGameBtn.disabled = true; // Disable end game button after game ends
+                endGameBtn.disabled = true;
                 initialTimeInput.disabled = false;
                 passPenaltyInput.disabled = false;
-                player1NameElement.disabled = false;
-                player2NameElement.disabled = false;
+                playerCountSelect.disabled = false;
                 
-                // Re-enable category selection
+                for (let i = 1; i <= totalPlayers; i++) {
+                    const nameElement = document.getElementById(`player${i}Name`);
+                    if (nameElement) nameElement.disabled = false;
+                }
+                
                 categoryElements.forEach(category => {
                     category.style.pointerEvents = 'auto';
                 });
                 
                 // Determine winner
+                let maxScore = -1;
+                let winners = [];
+                let maxTime = -1;
+                let timeWinners = [];
+                
+                for (let i = 1; i <= totalPlayers; i++) {
+                    if (playerScores[i] > maxScore) {
+                        maxScore = playerScores[i];
+                        winners = [i];
+                    } else if (playerScores[i] === maxScore) {
+                        winners.push(i);
+                    }
+                }
+                
                 let winnerMessage = "";
-                if (player1Score > player2Score) {
-                    winnerMessage = `${player1NameElement.value} wins!`;
-                } else if (player2Score > player1Score) {
-                    winnerMessage = `${player2NameElement.value} wins!`;
-                } else if (player1Time > player2Time) {
-                    winnerMessage = `${player1NameElement.value} wins (tie but more time left)!`;
-                } else if (player2Time > player1Time) {
-                    winnerMessage = `${player2NameElement.value} wins (tie but more time left)!`;
+                if (winners.length === 1) {
+                    winnerMessage = `${playerNames[winners[0]]} wins!`;
                 } else {
-                    winnerMessage = "It's a tie!";
+                    // Tie-breaker: most time left
+                    for (let i of winners) {
+                        if (playerTimes[i] > maxTime) {
+                            maxTime = playerTimes[i];
+                            timeWinners = [i];
+                        } else if (playerTimes[i] === maxTime) {
+                            timeWinners.push(i);
+                        }
+                    }
+                    
+                    if (timeWinners.length === 1) {
+                        winnerMessage = `${playerNames[timeWinners[0]]} wins (tie but more time left)!`;
+                    } else {
+                        winnerMessage = "It's a tie!";
+                    }
                 }
                 
                 if (reason) {
                     winnerMessage = `${reason} ${winnerMessage}`;
                 }
                 
-                winnerMessageElement.textContent = `${winnerMessage} Final Score: ${player1NameElement.value}: ${player1Score} - ${player2NameElement.value}: ${player2Score}`;
-                gameOverElement.style.display = 'block';
+                // Build score summary
+                let scoreSummary = "Final Scores: ";
+                for (let i = 1; i <= totalPlayers; i++) {
+                    scoreSummary += `${playerNames[i]}: ${playerScores[i]}`;
+                    if (i < totalPlayers) scoreSummary += " - ";
+                }
                 
-                // Scroll to game over message
+                winnerMessageElement.textContent = `${winnerMessage} ${scoreSummary}`;
+                gameOverElement.style.display = 'block';
                 gameOverElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
-           
+
             // Function to handle ending the game prematurely
             function endGamePrematurely() {
                 if (!gameActive) return;
                 
-                // Show the current answer when ending the game
                 answerDisplayElement.textContent = `Answer: ${currentImage.name}`;
                 answerDisplayElement.className = "answer-display correct-answer";
                 
-                // End the game with a specific message
                 endGame("Game ended prematurely.");
-            }            
+            }
 
-             // Add this function to preload images
+            // Function to preload images
             function preloadImages(imageUrls, callback) {
                 let loaded = 0;
                 const total = imageUrls.length;
                 
-                // If no images to load, call callback immediately
                 if (total === 0) {
                     callback();
                     return;
@@ -1455,7 +1529,7 @@
                         }
                     };
                     img.onerror = () => {
-                        loaded++; // Count errors too to avoid infinite waiting
+                        loaded++;
                         if (loaded === total) {
                             callback();
                         }
@@ -1463,12 +1537,6 @@
                     img.src = url;
                 });
             }
-
-            // Add this function to show loading progress (optional but helpful)
-            function updateLoadingProgress(loaded, total) {
-                const progress = Math.round((loaded / total) * 100);
-                startBtn.textContent = `Loading... ${progress}%`;
-            }           
 
             // Initialize the game
             initGame();
@@ -1484,34 +1552,29 @@
             
             // Keyboard shortcuts
             document.addEventListener('keydown', function(e) {
-                if (!gameActive) return;
                 if (!gameActive || endGameBtn.disabled) return; 
-                if (correctBtn.disabled) return; // Prevent keyboard input when buttons are disabled
+                if (correctBtn.disabled) return;
                 
                 if (e.key === 'ArrowLeft') {
                     handleCorrect();
-                    // Visual feedback
                     correctBtn.style.transform = 'scale(0.95)';
                     setTimeout(() => {
                         correctBtn.style.transform = '';
                     }, 100);
                 } else if (e.key === 'ArrowRight') {
                     handlePass();
-                    // Visual feedback
                     passBtn.style.transform = 'scale(0.95)';
                     setTimeout(() => {
                         passBtn.style.transform = '';
                     }, 100);
                 } else if (e.key === 'p' || e.key === 'P') {
                     togglePause();
-                    // Visual feedback
                     pauseBtn.style.transform = 'scale(0.95)';
                     setTimeout(() => {
                         pauseBtn.style.transform = '';
                     }, 100);
                 } else if (e.key === 'x' || e.key === 'X') {
                     endGamePrematurely();
-                    // Visual feedback
                     endGameBtn.style.transform = 'scale(0.95)';
                     setTimeout(() => {
                         endGameBtn.style.transform = '';

@@ -154,24 +154,26 @@
             overflow: hidden;
         }
 
-        /*.sidebar-top {
-            flex-shrink: 0;
+        .sidebar-scrollable-top {
+            flex: 0 0 auto; /* Don't grow, fixed height */
+            overflow-y: auto;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            padding: 20px;
-            background: white;
+            gap: 20px;
+            max-height: 40vh; /* Limit height for top section */
             border-bottom: 2px solid #e9ecef;
-        }*/
+        }
 
-        .sidebar-scrollable {
-            flex: 1;
+        .sidebar-scrollable-bottom {
+            flex: 1; /* Take remaining space */
             overflow-y: auto;
             padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
+
 
         .sidebar-section {
             background: white;
@@ -517,17 +519,11 @@
             }
             
             .sidebar-content {
-                flex-direction: column;
+                flex-direction: row;
             }
             
-            .sidebar-top {
-                flex: 1;
-                border-right: 2px solid #e9ecef;
-                border-bottom: none;
-            }
-            
-            .sidebar-scrollable {
-                flex: 2;
+            .sidebar-scrollable-top {
+                max-height: 30vh; /* Smaller on mobile */
             }
         }
 
@@ -548,9 +544,8 @@
                 flex-direction: column;
             }
             
-            .sidebar-top {
-                border-right: none;
-                border-bottom: 2px solid #e9ecef;
+            .sidebar-scrollable-top {
+                max-height: 25vh; /* Even smaller on very small screens */
             }
             
             .players-container.three-players,
@@ -590,8 +585,8 @@
         <div class="sidebar">
             <!-- Replace the entire sidebar-content section with this code -->
             <div class="sidebar-content">
-                <!-- Scrollable Sections (everything is now scrollable) -->
-                <div class="sidebar-scrollable">
+                <!-- First Scrollable Section: Players and Settings -->
+                <div class="sidebar-scrollable-top">
                     <!-- Players Section -->
                     <div class="sidebar-section">
                         <h3>Players</h3>
@@ -629,8 +624,11 @@
                             <input type="number" id="passPenalty" value="5" min="0" max="30">
                         </label>
                     </div>
+                </div>
 
-                    <!-- Game Controls (MOVED HERE) -->
+                <!-- Second Scrollable Section: Controls and Everything Else -->
+                <div class="sidebar-scrollable-bottom">
+                    <!-- Game Controls -->
                     <div class="sidebar-section">
                         <h3>Game Controls</h3>
                         <div class="controls">
@@ -1309,7 +1307,7 @@
                     
                     // In the startGame() function, add this line:
                     answerOverlay.className = 'answer-overlay'; // Hide overlay at game start
-
+                    
                     nextImage();
                     
                     lastTimerUpdate = Date.now();

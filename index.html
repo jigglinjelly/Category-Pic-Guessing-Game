@@ -161,7 +161,7 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            max-height: 40vh; /* Limit height for top section */
+            max-height: 45vh; /* Limit height for top section */
             border-bottom: 2px solid #e9ecef;
         }
 
@@ -552,7 +552,7 @@
             
             .players-container.three-players,
             .players-container.four-players {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr 1fr;
             }
             
             .categories {
@@ -606,26 +606,7 @@
                         </div>
                     </div>
 
-                    <!-- Settings -->
-                    <div class="sidebar-section settings">
-                        <h3>Game Settings</h3>
-                        <label>
-                            Players:
-                            <select id="playerCount">
-                                <option value="2">2 Players</option>
-                                <option value="3">3 Players</option>
-                                <option value="4">4 Players</option>
-                            </select>
-                        </label>
-                        <label>
-                            Time (s):
-                            <input type="number" id="initialTime" value="60" min="10" max="300">
-                        </label>
-                        <label>
-                            Penalty (s):
-                            <input type="number" id="passPenalty" value="5" min="0" max="30">
-                        </label>
-                    </div>
+                    
                 </div>
 
                 <!-- Second Scrollable Section: Controls and Everything Else -->
@@ -653,7 +634,26 @@
                             </button>
                         </div>
                     </div>
-
+                    <!-- Settings -->
+                    <div class="sidebar-section settings">
+                        <h3>Game Settings</h3>
+                        <label>
+                            Players:
+                            <select id="playerCount">
+                                <option value="2">2 Players</option>
+                                <option value="3">3 Players</option>
+                                <option value="4">4 Players</option>
+                            </select>
+                        </label>
+                        <label>
+                            Time (s):
+                            <input type="number" id="initialTime" value="60" min="10" max="300">
+                        </label>
+                        <label>
+                            Penalty (s):
+                            <input type="number" id="passPenalty" value="5" min="0" max="30">
+                        </label>
+                    </div>
                     <!-- Category Selection -->
                     <div class="sidebar-section">
                         <h3>Image Category
@@ -705,7 +705,6 @@
                             Selected: <span id="selectedCategory">None</span>
                         </p>
                     </div>
-
                     <!-- Game Rules -->
                     <div class="sidebar-section instructions">
                         <h3>Game Rules</h3>
@@ -1145,10 +1144,7 @@
                     player3.className = 'player';
                     player3.id = 'player3';
                     player3.innerHTML = `
-                        <h2>
-                            <span>Player</span>
-                            <input type="text" class="player-name" id="player3Name" value="Player 3" maxlength="12">
-                        </h2>
+                        <input type="text" class="player-name" id="player3Name" value="Player 3" maxlength="12">
                         <div class="score">0</div>
                         <div class="time-bank">Time: 60.0s</div>
                     `;
@@ -1160,10 +1156,7 @@
                     player4.className = 'player';
                     player4.id = 'player4';
                     player4.innerHTML = `
-                        <h2>
-                            <span>Player</span>
-                            <input type="text" class="player-name" id="player4Name" value="Player 4" maxlength="12">
-                        </h2>
+                        <input type="text" class="player-name" id="player4Name" value="Player 4" maxlength="12">
                         <div class="score">0</div>
                         <div class="time-bank">Time: 60.0s</div>
                     `;

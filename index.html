@@ -203,20 +203,22 @@
 
         .players-container.three-players {
             grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto;
         }
 
         .players-container.four-players {
             grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
+            grid-template-rows: auto auto;
         }
 
         .player {
-            padding: 15px;
+            padding: 10px;
             border-radius: 8px;
             background: #f8f9fa;
             transition: all 0.3s ease;
             border: 2px solid transparent;
             text-align: center;
+            min-height: 70px; /* Fixed minimum height */
         }
 
         .player.active {
@@ -227,7 +229,7 @@
         }
 
         .player h2 {
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             margin-bottom: 8px;
             color: #2c3e50;
         }
@@ -235,7 +237,7 @@
         .player-name {
             border: none;
             background: transparent;
-            font-size: 1.1rem;
+            font-size: 0.85rem;
             text-align: center;
             width: 100%;
             padding: 5px;
@@ -251,13 +253,13 @@
         }
 
         .score {
-            font-size: 1.6rem;
+            font-size: 1.3rem;
             font-weight: bold;
             color: #2196f3;
         }
 
         .time-bank {
-            font-size: 1rem;
+            font-size: 0.8rem;
             color: #e74c3c;
             margin-top: 5px;
         }

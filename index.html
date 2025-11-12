@@ -157,6 +157,7 @@
         .sidebar-scrollable-top {
             flex: 0 0 auto; /* Don't grow, fixed height */
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 20px;
             display: flex;
             flex-direction: column;
@@ -195,6 +196,8 @@
         .players-container {
             display: grid;
             gap: 12px;
+            width: 100%;     /*  Keep inside parent */    
+            max-width: 100%; /* Prevent grid expansion */
         }
 
         .players-container.two-players {
@@ -203,12 +206,11 @@
 
         .players-container.three-players {
             grid-template-columns: 1fr 1fr;
-            grid-template-rows: auto auto;
         }
 
         .players-container.four-players {
             grid-template-columns: 1fr 1fr;
-            grid-template-rows: auto auto;
+            grid-template-rows: 1fr 1fr;
         }
 
         .player {
@@ -526,6 +528,7 @@
             
             .sidebar-scrollable-top {
                 max-height: 30vh; /* Smaller on mobile */
+                max-width: 50%;
             }
         }
 
@@ -548,6 +551,7 @@
             
             .sidebar-scrollable-top {
                 max-height: 25vh; /* Even smaller on very small screens */
+                max-width: 50%;
             }
             
             .players-container.three-players,
@@ -557,6 +561,9 @@
             
             .categories {
                 grid-template-columns: 1fr;
+            }
+            .player {
+                min-width: 0; /*  Prevent children from forcing grid wider */
             }
         }
     </style>

@@ -1347,11 +1347,17 @@
                     }
                 };
                 newImage.onerror = () => {
-                    currentImageElement.src = currentImage.url;
-                    if (!wasPaused) {
-                        gamePaused = false;
-                        lastTimerUpdate = Date.now();
-                        startTimer();
+                    console.error(`Failed to load image: ${currentImage.name}`);
+                    
+                    // Skip this image and try the next one
+                    if (gameActive) {
+                        // Remove the failed image from usedImages so we can try another one
+                        usedImages.pop(); // Remove the last added (failed) image
+                        
+                        // Try next image immediately
+                        setTimeout(() => {
+                            nextImage();
+                        }, 500);
                     }
                 };
                 newImage.src = currentImage.url;

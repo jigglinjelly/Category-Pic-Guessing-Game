@@ -603,12 +603,12 @@
                             <div class="player" id="player1">
                                 <input type="text" class="player-name" id="player1Name" value="Player 1" maxlength="12">
                                 <div class="score">0</div>
-                                <div class="time-bank">Time: 60.0s</div>
+                                <div class="time-bank">Time: 150.0s</div>
                             </div>
                             <div class="player" id="player2">
                                 <input type="text" class="player-name" id="player2Name" value="Player 2" maxlength="12">
                                 <div class="score">0</div>
-                                <div class="time-bank">Time: 60.0s</div>
+                                <div class="time-bank">Time: 150.0s</div>
                             </div>
                         </div>
                     </div>
@@ -654,11 +654,11 @@
                         </label>
                         <label>
                             Time (s):
-                            <input type="number" id="initialTime" value="60" min="10" max="300">
+                            <input type="number" id="initialTime" value="150" min="10" max="300">
                         </label>
                         <label>
                             Penalty (s):
-                            <input type="number" id="passPenalty" value="5" min="0" max="30">
+                            <input type="number" id="passPenalty" value="10" min="0" max="30">
                         </label>
                     </div>
                     <!-- Category Selection -->
@@ -1106,7 +1106,7 @@
             // Game state
             let currentPlayer = 1;
             let playerScores = [0, 0, 0, 0]; // Index 0 unused, players start from 1
-            let playerTimes = [0, 60, 60, 60, 60]; // Index 0 unused, players start from 1
+            let playerTimes = [0, 150, 150, 150, 150]; // Index 0 unused, players start from 1
             let playerNames = ['', 'Player 1', 'Player 2', 'Player 3', 'Player 4'];
             let totalPlayers = 2;
             let timerInterval = null;
